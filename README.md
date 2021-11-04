@@ -7,11 +7,12 @@ On Windows 7 or Windows 10, we can add a folder that contains app shortcuts to t
 
 But on Windows 11, that can't work anymore.
 
-So I wrote a tool using PyQt5 that does the same thing, when clicking the app tray, it shows a list of apps.
+So I wrote a tool using PyQt5 that does the same thing, when clicking the app tray, it shows a list of apps and can quickly lanuch them.
 
 ![tray app lanucher](images/trayapplauncher.png)
 
-Modify the config file, it's json format. Add a new app info and restart AppQuickLauncher.pyw
+Modify the config file, it's json format. Add a new app info and restart AppQuickLauncher.pyw.
+Modify taskbar property, make python icon always show on taskbar.
 ```json
 {
     "appList": [{
@@ -47,4 +48,6 @@ Modify the config file, it's json format. Add a new app info and restart AppQuic
     ]
 }
 ```
+
+![python icon](images/showicon.png)
 
