@@ -47,7 +47,7 @@ class TrayDlg(QDialog):
         self.trayIconMenu.keyPressEvent = self.MenuKeyPressEvent
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setIcon(icon)
-        self.trayIcon.setContextMenu(self.trayIconMenu)
+        # self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.activated.connect(self.showTrayMenu)
         self.trayIcon.show()
 
@@ -60,7 +60,10 @@ class TrayDlg(QDialog):
                 self.trayIconMenu.hide()
         QMenu.keyPressEvent(self.trayIconMenu, event)
 
-    def showTrayMenu(self) -> None:
+    def showTrayMenu(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        reasons = {QSystemTrayIcon.Unknown: 'Unknown', QSystemTrayIcon.Context: 'Context', QSystemTrayIcon.DoubleClick: 'DoubleClick',
+                   QSystemTrayIcon.Trigger: 'Trigger', QSystemTrayIcon.MiddleClick: 'MiddleClick'}
+        print(reason, reasons[reason])
         self.trayIconMenu.exec_(QCursor.pos())
 
     def onLaunchAppAction(self) -> None:
