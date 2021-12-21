@@ -70,14 +70,15 @@ class TrayDlg(QDialog):
         action = self.sender()
         index = self.actions.index(action)
         app = self.configJson['appList'][index]
-        print('onLaunchAppAction', index, app['name'])
+        print('onLaunchAppAction', index, app)
+        operation = app.get('operation', self.configJson.get('operation', ''))
         exePath = app['exe']
         exeArgv = app.get('argv', '')
         exeWorkDir = app.get('dir', '')
         if not exeWorkDir:
             exeWorkDir = os.path.split(exePath)[0]
         print(f'dir:{exeWorkDir}, {exePath} {exeArgv}')
-        ctypes.windll.shell32.ShellExecuteW(None, "", exePath, exeArgv, exeWorkDir, 1)
+        ctypes.windll.shell32.ShellExecuteW(None, operation, exePath, exeArgv, exeWorkDir, 1)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         event.ignore()
