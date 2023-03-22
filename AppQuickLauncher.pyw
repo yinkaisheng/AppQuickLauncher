@@ -13,7 +13,7 @@ from PyQt5.QtWinExtras import QtWin
 
 ExePath = os.path.abspath(sys.argv[0])
 ExeDir, ExeName = os.path.split(ExePath)
-ExeNameNoExt = ExeName.split('.')[0]
+ExeNameNoExt = os.path.splitext(ExeName)[0]
 
 
 class TrayDlg(QDialog):
@@ -22,13 +22,13 @@ class TrayDlg(QDialog):
         self.setWindowFlags(Qt.Dialog | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint)
         self.setWindowTitle(ExeNameNoExt)
         self.resize(400, 300)
-        self.configPath = os.path.join(ExeDir, os.path.splitext(ExeName)[0] + '.config')
+        self.configPath = os.path.join(ExeDir, ExeNameNoExt + '.config')
         with open(self.configPath, 'rt', encoding='utf-8', errors='ignore') as fin:
             self.configJson = json.loads(fin.read())
         self.createUI()
 
     def createUI(self) -> None:
-        icon = QIcon(f'{ExeNameNoExt}.ico')
+        icon = QIcon(os.path.join(ExeDir, f'{ExeNameNoExt}.ico'))
         self.setWindowIcon(icon)
         self.actions = []
         self.trayIconMenu = QMenu(self)
@@ -41,7 +41,11 @@ class TrayDlg(QDialog):
             action = QAction(qico, app['name'], self, triggered=self.onLaunchAppAction)
             self.actions.append(action)
             self.trayIconMenu.addAction(action)
-        self.quitAction = QAction('Quit', self, triggered=QApplication.instance().quit)
+        if sys.platform == 'win32':
+            quitText = f'Quit(IsAdmin {ctypes.windll.shell32.IsUserAnAdmin()})'
+        else:
+            quitText = 'Quit'
+        self.quitAction = QAction(quitText, self, triggered=QApplication.instance().quit)
         self.trayIconMenu.addSeparator()
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIconMenu.keyPressEvent = self.MenuKeyPressEvent
