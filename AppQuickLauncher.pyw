@@ -41,11 +41,7 @@ class TrayDlg(QDialog):
             action = QAction(qico, app['name'], self, triggered=self.onLaunchAppAction)
             self.actions.append(action)
             self.trayIconMenu.addAction(action)
-        if sys.platform == 'win32':
-            quitText = f'Quit(IsAdmin {ctypes.windll.shell32.IsUserAnAdmin()})'
-        else:
-            quitText = 'Quit'
-        self.quitAction = QAction(quitText, self, triggered=QApplication.instance().quit)
+        self.quitAction = QAction(f'Quit( IsAdmin {ctypes.windll.shell32.IsUserAnAdmin()})', self, triggered=QApplication.instance().quit)
         self.trayIconMenu.addSeparator()
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIconMenu.keyPressEvent = self.MenuKeyPressEvent
