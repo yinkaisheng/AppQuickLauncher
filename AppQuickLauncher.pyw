@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # author: yinkaisheng@foxmail.com
 import os
@@ -28,16 +28,24 @@ class TrayDlg(QDialog):
         self.createUI()
 
     def createUI(self) -> None:
-        icon = QIcon(os.path.join(ExeDir, f'{ExeNameNoExt}.ico'))
-        self.setWindowIcon(icon)
         self.actions = []
         self.trayIconMenu = QMenu(self)
         for app in self.configJson['appList']:
-            hicon = ctypes.windll.shell32.ExtractIconW(0, app['exe'], app.get('icon', 0))
-            qpixmp = QtWin.fromHICON(hicon)  # qpixmp.save('exe.ico')
-            ctypes.windll.user32.DestroyIcon(ctypes.c_void_p(hicon))
-            qico = QIcon()
-            qico.addPixmap(qpixmp)
+            icon = app.get('icon', 0)
+            qico = None
+            if isinstance(icon, int):
+                hicon = ctypes.windll.shell32.ExtractIconW(0, app['exe'], icon)
+            elif isinstance(icon, str):
+                if icon.endswith('.ico'):
+                    qico = QIcon(icon)
+                else:
+                    path, index = icon.split(',')
+                    hicon = ctypes.windll.shell32.ExtractIconW(0, path, int(index))
+            if qico is None:
+                qpixmp = QtWin.fromHICON(hicon)  # qpixmp.save('exe.ico')
+                ctypes.windll.user32.DestroyIcon(ctypes.c_void_p(hicon))
+                qico = QIcon()
+                qico.addPixmap(qpixmp)
             action = QAction(qico, app['name'], self, triggered=self.onLaunchAppAction)
             self.actions.append(action)
             self.trayIconMenu.addAction(action)
@@ -45,11 +53,13 @@ class TrayDlg(QDialog):
         self.trayIconMenu.addSeparator()
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIconMenu.keyPressEvent = self.MenuKeyPressEvent
+        icon = QIcon(os.path.join(ExeDir, f'{ExeNameNoExt}.ico'))
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setIcon(icon)
         # self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.activated.connect(self.showTrayMenu)
         self.trayIcon.show()
+        self.setWindowIcon(icon)
 
     def MenuKeyPressEvent(self, event: QKeyEvent) -> None:
         key = event.key()
@@ -72,12 +82,13 @@ class TrayDlg(QDialog):
         app = self.configJson['appList'][index]
         print('onLaunchAppAction', index, app)
         operation = app.get('operation', self.configJson.get('operation', ''))
-        exePath = app['exe']
-        exeArgv = app.get('argv', '')
+        exePath = app.get('exe', None)
+        exeArgv = app.get('argv', None)
         exeWorkDir = app.get('dir', '')
         if not exeWorkDir:
             exeWorkDir = os.path.split(exePath)[0]
         print(f'dir:{exeWorkDir}, {exePath} {exeArgv}')
+        # if exeWorkDir doesn't work, python(w).exe may be set run as admin
         ctypes.windll.shell32.ShellExecuteW(None, operation, exePath, exeArgv, exeWorkDir, 1)
 
     def closeEvent(self, event: QCloseEvent) -> None:
